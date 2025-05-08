@@ -19,7 +19,7 @@ exports.getAllOnlineUsers = async (req, res) => {
 
 
 
-        res.status(200).json(onlineUsers);
+        res.status(200).json({users:onlineUsers});
     } catch (error) {
         res.status(500).json({ error: 'Failed to retrieve online users' });
     }

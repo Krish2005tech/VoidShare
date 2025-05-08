@@ -6,6 +6,7 @@ const salt=17;
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+    public_key: { type: String, required: true },
 }, { timestamps: true });
 
 userSchema.pre('save', async function (next) {

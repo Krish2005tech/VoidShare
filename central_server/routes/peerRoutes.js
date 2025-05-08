@@ -4,7 +4,7 @@ const { protect } = require('../middlewares/authMiddleware');
 
 const router = express.Router();
 
-router.get('/allOnline', protect, getAllOnlineUsers);
-router.post('/request/:id', protect, sendPeerRequest);
+router.get('/allOnline',  getAllOnlineUsers);
+router.post('/request/:id', sendPeerRequest);
 
 module.exports = router;

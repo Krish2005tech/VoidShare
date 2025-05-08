@@ -6,19 +6,20 @@ const redisClient = require('../config/redis.js');
 const generateToken = require('../utils/jwtHelper.js').generateToken;
 
 const setUserOnline = async (username) => {
-    await redisClient.set(`online:${username}`, 'true', 'EX', 2700); // Set user online with 45-min expiration
+    await redisClient.set(`online:${username}`, 'true', {'EX': 2700}); // Set user online with 45-min expiration
+    console.log(`User ${username} set online in Redis`);
 };
 
 exports.registerUser = async (req, res) => {
     try {
-        const { username, password } = req.body;
+        const { username, password,key } = req.body;
 
         const check = await User.findOne({ username });
         if (check) {
             return res.status(400).json({ error: 'User already exists' });
         }
 
-        let user = await User.create({ username, password });
+        let user = await User.create({ username, password, public_key: key });
         console.log(user);
 
         await setUserOnline(username);
@@ -27,6 +28,8 @@ exports.registerUser = async (req, res) => {
 
     } catch (error) {
         res.status(500).json({ error: 'Error creating user' });
+        console.error(error);
+
     }
 };
 
@@ -56,7 +59,29 @@ exports.loginUser = async (req, res) => {
 };
 
 exports.getUserProfile = async (req, res) => {
-    const user = await User.findById(req.user.id);
+    // const user = await User.findById(req.user.id);
+    const {username} = req.body;
+    const user = await User.findOne({ username });
+    if (!user) {
+        return res.status(401).json({ error: 'User not found' });
+    }
     await setUserOnline(user.username);
-    res.json(user);
+    res.json({ public_key: user.public_key });
 };
+
+// for /api/user/profile/:username return the public key of the user
+// exports.getUserPublicKey = async (req, res) => {
+//     const user = await User.findOne({ username: req.params.username });
+//     if (!user) {
+//         return res.status(404).json({ error: 'User not found' });
+//     }
+//     res.json({ public_key: user.public_key });
+// }
+
+
+exports.logoutUser = async (req, res) => {
+    const { username } = req.body;
+    await redisClient.del(`online:${username}`);
+    console.log(`User ${username} set offline in Redis`);
+    res.status(200).json({ message: 'User logged out' });
+}
