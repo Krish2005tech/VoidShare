@@ -4,16 +4,21 @@ import "./LoginPage.css";
 import { initializeAES, generateECCKeys, deriveSharedSecret, encryptFile, decryptFile, encryptAESKey, decryptAESKey, getAESkey, copyKey } from './encryption/utils.js';
 
 const LoginPage = () => {
-  const [isNewUser, setIsNewUser] = useState(false);
+  const [isNewUser, setIsNewUser] = useState(false); //false for login, true for signup
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [password2, setPassword2] = useState("");
+  const [password2, setPassword2] = useState(""); //confirm password field
+
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+
   const navigate = useNavigate(); 
+
   const [publicKey, setPublicKey] = useState("");
   const [privateKey, setPrivateKey] = useState("");
-  const [loading, setLoading] = useState(false);
+
+  const [loading, setLoading] = useState(false); //loading state for the button
 
 
 
@@ -62,7 +67,7 @@ const LoginPage = () => {
       } else {
         localStorage.setItem("token", data.token);
         localStorage.setItem("username", username);
-        localStorage.setItem("password", password); 
+        // localStorage.setItem("password", password); //storing earlier for testing
         setMessage("Login successful!");
         navigate("/dashboard"); 
       }
@@ -98,13 +103,13 @@ const LoginPage = () => {
     generateKeys();
     console.log("Public Key: ", publicKey);
 
-    let PublicKey = localStorage.getItem("publicKey");
+    // let PublicKey = localStorage.getItem("publicKey");
 
     try {
       const res = await fetch("http://localhost:7000/api/user/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password,key:PublicKey }),
+        body: JSON.stringify({ username, password,key:publicKey}),
       });
 
       const data = await res.json();

@@ -38,7 +38,7 @@ function getAESkey() {
     return AESkeyBase64;
 }
 
-
+//function to generate ECC keys - returns public and private keys in base64 format and also stores them in localStorage
 async function generateECCKeys() {
     const keyPair = await window.crypto.subtle.generateKey(
         {

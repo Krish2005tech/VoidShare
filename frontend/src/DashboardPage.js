@@ -80,10 +80,10 @@ const DashboardPage = () => {
 
       switch (data.type) {
         case 'peers':
-          // Update online users
+          // Update online users viA WS
           const filteredPeers = data.peers.filter(peer => peer !== peerId);
-          setOnlineUsers(filteredPeers);
-          console.log("Online peers:", filteredPeers);
+          // setOnlineUsers(filteredPeers);
+          console.log("Online peers via ws:", filteredPeers);
           break;
 
         case 'connect-request':
@@ -449,8 +449,6 @@ const DashboardPage = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("username");
     navigate("/");
     const res = fetch("http://localhost:7000/api/user/logout", {
       method: "POST",
@@ -460,10 +458,12 @@ const DashboardPage = () => {
       },
       body: JSON.stringify({ username })
     })
-
+    
     .then((response) => {
       if (response.ok) {
+        localStorage.removeItem("username");
         console.log("Logout successful");
+        localStorage.removeItem("token");
       } else {
         console.error("Logout failed");
       }
