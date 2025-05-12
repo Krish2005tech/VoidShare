@@ -38,6 +38,7 @@ const LoginPage = () => {
     setPrivateKey(newPrivateKey);
   //   localStorage.setItem("publicKey", newPublicKey);
   //   localStorage.setItem("privateKey", newPrivateKey);
+   return newPublicKey;
   };
 
 
@@ -119,16 +120,14 @@ const LoginPage = () => {
     }
     setLoading(true);
 
-    await generateKeys();
-    // console.log("Public Key: in sign up ", publicKey);
+    const public_key = await generateKeys();
 
-    // let publicKey = localStorage.getItem("publicKey");
 
     try {
       const res = await fetch("http://localhost:7000/api/user/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password,key:publicKey}),
+        body: JSON.stringify({ username, password,key:public_key}),
       });
 
       const data = await res.json();
@@ -137,13 +136,24 @@ const LoginPage = () => {
 
       if (!res.ok) {
         setError(data.error || "Signup failed.");
-      } else {
+      } 
+      
+      else {
+
         setMessage("Signup successful! Please log in.");
-        setCredentials(prev => ({
-          ...prev,
-          password2: "" // Clear the password2 field
-        }));
+
+        // setCredentials(prev => ({
+        //   ...prev,
+        //   password2: "" // Clear the password2 field
+        // }));
+        setCredentials({ username: "", password: "", password2: "" }); // Clear the credentials state
+
         setIsNewUser(false);
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("username", username);
+
+
+        navigate("/dashboard"); // Redirect to the dashboard after successful signup
       }
     } catch (error) {
       setError("Network error. Please try again.");

@@ -26,7 +26,7 @@ exports.registerUser = async (req, res) => {
 
         await setUserOnline(username);
         console.log("User added to redis");
-        res.status(201).json({ user,token: generateToken(user._id) });
+        res.status(201).json({ token: generateToken(user._id) });
 
     } catch (error) {
         res.status(500).json({ error: 'Error creating user' });
