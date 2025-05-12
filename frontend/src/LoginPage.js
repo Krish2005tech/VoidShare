@@ -6,9 +6,16 @@ import { initializeAES, generateECCKeys, deriveSharedSecret, encryptFile, decryp
 const LoginPage = () => {
   const [isNewUser, setIsNewUser] = useState(false); //false for login, true for signup
 
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [password2, setPassword2] = useState(""); //confirm password field
+  // const [username, setUsername] = useState("");
+  // const [password, setPassword] = useState("");
+  // const [password2, setPassword2] = useState(""); //confirm password field
+
+  const [credentials, setCredentials] = useState({
+    username: "",
+    password: "",
+    password2: "" // for signup
+  });
+
 
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -21,11 +28,10 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false); //loading state for the button
 
 
-
-  const generateKeys = () => {
+  const generateKeys  = async() => {
     // const newPublicKey = "pub_" + Math.random().toString(36).substring(2, 15);
     // const newPrivateKey = "priv_" + Math.random().toString(36).substring(2, 15);
-    const keyPair = generateECCKeys();
+    const keyPair = await generateECCKeys();
     const newPublicKey = keyPair.publicKey;
     const newPrivateKey = keyPair.privateKey;
     setPublicKey(newPublicKey);
@@ -35,10 +41,20 @@ const LoginPage = () => {
   };
 
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setCredentials(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
   const handleSubmit_login = async (e) => {
     e.preventDefault();
     setError("");
     setMessage("");
+
+    const { username, password } = credentials; // Use the credentials state
 
     if (!username || !password) {
       setError("Please enter both username and password.");
@@ -65,6 +81,7 @@ const LoginPage = () => {
       if (!res.ok) {
         setError(data.error || "Login failed.");
       } else {
+        setCredentials({ username: "", password: "", password2: "" }); // Clear the credentials state
         localStorage.setItem("token", data.token);
         localStorage.setItem("username", username);
         // localStorage.setItem("password", password); //storing earlier for testing
@@ -83,6 +100,8 @@ const LoginPage = () => {
     setError("");
     setMessage("");
 
+    const { username, password, password2 } = credentials; // Use the credentials state
+
 
 
     if (password !== password2) {
@@ -100,10 +119,10 @@ const LoginPage = () => {
     }
     setLoading(true);
 
-    generateKeys();
-    console.log("Public Key: ", publicKey);
+    await generateKeys();
+    // console.log("Public Key: in sign up ", publicKey);
 
-    // let PublicKey = localStorage.getItem("publicKey");
+    // let publicKey = localStorage.getItem("publicKey");
 
     try {
       const res = await fetch("http://localhost:7000/api/user/register", {
@@ -120,6 +139,10 @@ const LoginPage = () => {
         setError(data.error || "Signup failed.");
       } else {
         setMessage("Signup successful! Please log in.");
+        setCredentials(prev => ({
+          ...prev,
+          password2: "" // Clear the password2 field
+        }));
         setIsNewUser(false);
       }
     } catch (error) {
@@ -131,9 +154,10 @@ const LoginPage = () => {
 
   const handleSwitchMode = () => {
     setIsNewUser(!isNewUser);
-    setUsername("");
-    setPassword("");
-    setPassword2("");
+    // setUsername("");
+    // setPassword("");
+    setCredentials({ username: "", password: "", password2: "" }); // Clear the credentials state
+    // setPassword2("");
     setError("");
     setMessage("");
   };
@@ -151,8 +175,8 @@ const LoginPage = () => {
         <>
           <h2>Login</h2>
           <form onSubmit={handleSubmit_login}>
-            <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required />
-            <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            <input type="text" placeholder="Username" name="username" value={credentials.username}  onChange={handleInputChange} required />
+            <input type="password" placeholder="Password" name="password" value={credentials.password}  onChange={handleInputChange} required />
               <button type="submit" disabled={loading}>
                 {loading ? <div className="spinner"></div> : "Login"}
               </button>
@@ -164,9 +188,9 @@ const LoginPage = () => {
         <>
           <h2>Signup</h2>
           <form onSubmit={handleSubmit_signup}>
-            <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required />
-            <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-            <input type="password" placeholder="Confirm Password" value={password2} onChange={(e) => setPassword2(e.target.value)} required />
+            <input type="text" placeholder="Username" name="username" value={credentials.username}  onChange={handleInputChange} required />
+            <input type="password" placeholder="Password" name="password" value={credentials.password}  onChange={handleInputChange} required />
+            <input type="password" placeholder="Confirm Password" name="password2" value={credentials.password2}  onChange={handleInputChange} required />
             <button type="submit" disabled={loading}>
   {loading ? <div className="spinner"></div> : "Sign Up"}
 </button>

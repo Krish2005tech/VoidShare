@@ -49,16 +49,24 @@ async function generateECCKeys() {
         ["deriveKey"]
     );
 
-    const publicKey = await window.crypto.subtle.exportKey("spki", keyPair.publicKey);
-    const privateKey = await window.crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
+    let publicKey = await window.crypto.subtle.exportKey("spki", keyPair.publicKey);
+    let privateKey = await window.crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
 
-    console.log("Public Key (Base64):", btoa(String.fromCharCode(...new Uint8Array(publicKey))));
-    console.log("Private Key (Base64):", btoa(String.fromCharCode(...new Uint8Array(privateKey))));
+    publicKey = btoa(String.fromCharCode(...new Uint8Array(publicKey)))
+    privateKey = btoa(String.fromCharCode(...new Uint8Array(privateKey)))
 
-    localStorage.setItem("publicKey", btoa(String.fromCharCode(...new Uint8Array(publicKey))));
-    localStorage.setItem("privateKey", btoa(String.fromCharCode(...new Uint8Array(privateKey))));
+    console.log("Public Ke1y:", publicKey);
+    console.log("Private Key:", privateKey);
+    // console.log("Public Key (Base64):", btoa(String.fromCharCode(...new Uint8Array(publicKey))));
+    // console.log("Private Key (Base64):", btoa(String.fromCharCode(...new Uint8Array(privateKey))));
 
-    return {publicKey: btoa(String.fromCharCode(...new Uint8Array(publicKey))), privateKey: btoa(String.fromCharCode(...new Uint8Array(privateKey)))};
+    // localStorage.setItem("publicKey", btoa(String.fromCharCode(...new Uint8Array(publicKey))));
+    // localStorage.setItem("privateKey", btoa(String.fromCharCode(...new Uint8Array(privateKey))));
+    localStorage.setItem("publicKey", publicKey);
+    localStorage.setItem("privateKey", privateKey);
+
+    // return {publicKey: btoa(String.fromCharCode(...new Uint8Array(publicKey))), privateKey: btoa(String.fromCharCode(...new Uint8Array(privateKey)))};
+    return { publicKey, privateKey };
 }
 
 async function deriveSharedSecret(privateKeyBase64, publicKeyBase64) {
