@@ -2,6 +2,7 @@ const User = require('../models/Users.js');
 const jwt = require('jsonwebtoken');
 const redisClient = require('../config/redis.js');
 
+const bcrypt = require('bcrypt');
 
 const generateToken = require('../utils/jwtHelper.js').generateToken;
 
@@ -36,27 +37,45 @@ exports.registerUser = async (req, res) => {
 };
 
 exports.loginUser = async (req, res) => {
+    // console.time('Total Login Time');
     try {
         const { username, password } = req.body;
+        
+        // console.time('1. Database Query');
         const user = await User.findOne({ username });
+        // console.timeEnd('1. Database Query');
 
         if (!user) {
             return res.status(401).json({ error: 'User not found' });
         }
 
-        // if (user.password !== password) {
-        //     return res.status(401).json({ error: 'Wrong Password' });
-        // }
-
-        if(!await user.matchPassword(password)){
+        // Test direct bcrypt vs method call
+        // console.time('2a. Direct bcrypt compare');
+        const directResult = await bcrypt.compare(password, user.password);
+        // console.timeEnd('2a. Direct bcrypt compare');
+        
+        // console.time('2b. User method compare');
+        const methodResult = await user.matchPassword(password);
+        // console.timeEnd('2b. User method compare');
+        
+        if(!methodResult){
             return res.status(401).json({ error: 'Wrong Password' });
         }
 
+        // console.time('3. Redis Set Online');
         await setUserOnline(username);
-        res.status(200).json({ user,token: generateToken(user._id) });
-        // res.status(200).json({ user});
+        // console.timeEnd('3. Redis Set Online');
+        
+        // console.time('4. Generate Token');
+        const token = generateToken(user._id);
+        // console.timeEnd('4. Generate Token');
+
+        res.status(200).json({ user, token });
     } catch (error) {
+        console.error('Login error:', error);
         res.status(500).json({ error: 'Login failed' });
+    // } finally {
+    //     console.timeEnd('Total Login Time');
     }
 };
 
